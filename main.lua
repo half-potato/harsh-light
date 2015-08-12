@@ -1,13 +1,21 @@
 debug = true
-require 'util/Tileset'
-require 'util/Tile'
+require 'level/Tileset'
+require 'level/Tilemap'
+require 'level/Map'
+require 'level/Tile'
 
-o = {tsetname = "assets/Tileset.png", twidth = 128, theight = 128}
-globaltime = 0
+tset = {prefix = "assets/Tiles/Ground_", suffix = ".png"}
+tmap = {tmapname = 'assets/Tileset.png', theight = 128, twidth = 128}
+map = {data = {{3, 1, 2}, {1, 2, 3}}}
+globaltime = 1
 
 function love.load(arg)
-	o = Tileset.new(o)
 	p = love.graphics.newImage("assets/Tileset.png")
+	tset = Tileset.new(tset)
+	tmap = Tilemap.new(tmap)
+	map.tileset = tset
+	map.tilemap = tmap
+	map = Map.new(map)
 end
 
 function love.update(dt)
@@ -15,19 +23,7 @@ function love.update(dt)
 end
 
 function love.draw()
-	love.graphics.print("Hello World", love.graphics.getWidth() / 2, love.graphics.getHeight() / 2)
-	-- love.graphics.draw(o.tset, o[2], 100, 100)
 	angle = (180 * math.sin(globaltime / 2) + 180)
-	pts = rotatedIsoPoints(angle, o.twidth, o.theight)
-	np = {5, 2, 4, 9, 10, 20}
-	--[[
-	np2 = { pts.top.x, pts.top.y, 
-			pts.right.x, pts.right.y,
-			pts.bot.x, pts.bot.y, 
-			pts.left.x, pts.left.y}
-	np2 = vadd(100, np2)
-	]]
-	pts = vadd(100, pts)
-	print(angle)
-	love.graphics.polygon('fill', pts)
+	map:setAngle(angle)
+	map:draw(300, 300, 128, 64)
 end

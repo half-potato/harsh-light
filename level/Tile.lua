@@ -1,15 +1,7 @@
-Tile = {}
-
-function Tile:new (objdata)
-	objdata = objdata or {}
-	setmetatable(objdata, self)
-	self.__index = self
-	return objdata
-end
-
 function toIso(x, y)
+	angle = math.pi * 3 / 4
 	x, y = (2 * y + x) / 2, (2 * y - x) / 2
-	return x, y
+	return rotate(angle, x, y)
 end
 
 function toCaut(x, y)
@@ -51,11 +43,11 @@ function rotatedIsoPoints(degree, tWidth, tHeight)
 
 	-- Convert angles to points 
 	--[[
-	p.top = {x = math.cos(a.top) * tWidth / 2, y = math.sin(a.top) * tHeight / 2}
-	p.right = {x = math.cos(a.right) * tWidth / 2, y = math.sin(a.right) * tHeight / 2}
-	p.bot = {x = math.cos(a.bot) * tWidth / 2, y = math.sin(a.bot) * tHeight / 2}
-	p.left = {x = math.cos(a.left) * tWidth / 2, y = math.sin(a.left) * tHeight / 2}
-	]]
+	p = {math.cos(a.top) * tWidth / 2, math.sin(a.top) * tHeight / 2,
+		 math.cos(a.right) * tWidth / 2, math.sin(a.right) * tHeight / 2,
+		 math.cos(a.left) * tWidth / 2, math.sin(a.left) * tHeight / 2,
+	 	 math.cos(a.bot) * tWidth / 2, math.sin(a.bot) * tHeight / 2}
+	]]--
 	p = {math.cos(a.top) * tWidth / 2, math.sin(a.top) * tHeight / 2,
 		 math.cos(a.right) * tWidth / 2, math.sin(a.right) * tHeight / 2,
 		 math.cos(a.left) * tWidth / 2, math.sin(a.left) * tHeight / 2,
@@ -73,11 +65,15 @@ function rotatedIsoPoints(degree, tWidth, tHeight)
 	p[7], p[8] = toIso(p[7], p[8])
 
 	-- Rotate it right because love2d uses some stupid topleft origin
+
 	angle = math.pi * 3 / 4
+	vecarray = {}
 	for i = 1, 8, 2 do
-		p[i], p[i + 1] = rotate(angle, p[i], p[i + 1])
+		-- x, y = rotate(angle, p[i], p[i + 1])
+		table.insert(vecarray, {p[i], p[i + 1]})
 	end
-	return p
+
+	return vecarray
 end
 
 function rotate(deg, x, y)
