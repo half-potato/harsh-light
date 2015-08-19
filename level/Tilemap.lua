@@ -29,6 +29,14 @@ function Tilemap.new(o)
 	return o
 end
 
+function Tilemap:getWidth()
+	return self.tmap:getWidth()
+end
+
+function Tilemap:getHeight()
+	return self.tmap:getHeight()
+end
+
 function Tilemap:getCoords(i)
 	tx = (i - (self.width * math.floor(i / self.width)))
 	ty = math.floor(i / self.width)

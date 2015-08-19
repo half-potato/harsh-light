@@ -14,6 +14,7 @@ function Map.new(o)
 	o.__index = o
 	
 	o.angle = 0
+	o.zoom = 1
 
 	if (not o.data) and o.mapname then
 		o:loadMap(o.mapname)
@@ -37,8 +38,14 @@ function Map:loadMap(name)
 end
 
 function Map:updateMesh()
-	points = rotatedIsoPoints(self.angle, self.tileset.twidth, self.tileset.theight)
+	points = rotatedIsoPoints(self.angle, self.tileset.twidth * self.zoom, self.tileset.theight * self.zoom)
 	self.tmesh = love.graphics.newMesh(points, self.tilemap.tmap)
+end
+
+-- Percentage of width, 0 - 1
+function Map:setAnchor(x, y)
+	self.anchorx = x
+	self.anchory = y
 end
 
 -- Input map coords and get the mesh for the tile
@@ -51,19 +58,20 @@ function Map:getMesh(x, y)
 		-- Set the texture coords to the tile coords
 		udx, udy = self.tilemap:getUVDimensions()
 		ux, uy = self.tilemap:getBotUV(self.curtid)
+		singlepixel = (1 / self.tilemap:getWidth())
 
 		mpoints = self.tmesh:getVertices()
-		-- Top Left
-		mpoints[1][3] = ux
-		mpoints[1][4] = uy + udy
-		-- Top Right
-		mpoints[2][3] = ux + udx
-		mpoints[2][4] = uy + udy
 		-- Bot Left
-		mpoints[3][3] = ux
-		mpoints[3][4] = uy
+		mpoints[1][3] = ux
+		mpoints[1][4] = uy
+		-- Top Left
+		mpoints[2][3] = ux
+		mpoints[2][4] = uy + udy
+		-- Top Right
+		mpoints[3][3] = ux + udx - singlepixel
+		mpoints[3][4] = uy + udy
 		-- Bot Right
-		mpoints[4][3] = ux + udx
+		mpoints[4][3] = ux + udx - singlepixel
 		mpoints[4][4] = uy
 		
 		self.tmesh:setVertices(mpoints)
@@ -72,29 +80,115 @@ function Map:getMesh(x, y)
 	return self.tmesh
 end
 
-function Map:setAngle(n)
-	self.angle = n
-	self:updateMesh()
-end
-
-function Map:draw(originx, originy, midx, midy)
+function Map:getWidth()
+	nonsqrtleng = 0
 	for x, row in next, self.data, nil do
-		for y, tid in next, row, nil do
-			m = self:getMesh(x, y)
-			angle = math.pi / 4
-			w, h = self.tileset.twidth, self.tileset.theight
-			cx, cy = rotate(angle, x * w, y * h)
-			cy = cy / 2
-
-			-- Rotate it
-			midheight = cy - midy
-			midwidth = cx - midx
-			tangle = math.atan(midheight / midwidth) + (self.angle * (2 * math.pi / 360))
-			offx, offy = math.cos(tangle) * midwidth, math.sin(tangle) * midheight
-
-			offy = offy / 2
-
-			love.graphics.draw(m, cx + originx + offx, cy + originy + offy)
+		dist = table.getn(row) * self.tileset.theight * self.zoom
+		r = x * self.tileset.twidth * self.zoom
+		l = dist * dist + r * r
+		if(nonsqrtleng < l) then
+			nonsqrtleng = l
 		end
 	end
+	return math.sqrt(nonsqrtleng)
+end
+
+function Map:getHeight()
+	both = table.getn(self.data[1])
+	-- Lazy, only checks the first row
+	toph = table.getn(self.data)
+
+	theight = (both + toph)
+
+	height = (theight * self.tileset.theight * self.zoom) / 2 - 128
+
+	return height
+end
+
+-- Mode = which part of the tile. 1 = top, 2 = right, 3 = bot, 4 = left, 5 = mid
+function Map:getPos(tx, ty, mode)
+	x = tx * self.tileset.twidth
+	y = ty * self.tileset.theight / 2
+	-- This is the bottom of the tile
+	if mode == 1 then
+		y = y - self.tileset.theight / 2
+	elseif mode == 2 then
+		y = y - self.tileset.theight / 4
+		x = x + self.tileset.twidth / 4
+	elseif mode == 4 then
+		y = y - self.tileset.theight / 4
+		x = x - self.tileset.twidth / 4
+	elseif mode == 5 then
+		y = y - self.tileset.theight / 4
+	end
+
+	love.graphics.point(x, y)
+	return x, y
+end
+
+function Map:draw(originx, originy, midx, midy, angle, zoom)
+	for x, row in next, self.data, nil do
+		for y, tid in next, row, nil do
+			-- Try not to update the mesh twice
+			if not (zoom == self.zoom) then
+				self.zoom = zoom
+				if not (angle == self.angle) then
+					self.angle = angle
+					self:updateMesh()
+				else
+					self:updateMesh()
+				end
+			elseif not (angle == self.angle) then
+				self.angle = angle
+				self:updateMesh()
+			end
+
+			w, h = self.tileset.twidth, self.tileset.theight
+
+			-- Rotate by 45 degrees
+			fourfive = math.pi / -4
+			cx, cy = rotate(fourfive, x * w * zoom, y * h * zoom)
+
+			cx = cx + originx
+			cy = cy + originy
+
+			-- Rotate it by the degree specified around the center point
+			midheight = cy - midx
+			midwidth = cx - midy
+
+			-- Find current angle around center point
+			curtangle = math.atan(midheight / midwidth)
+			
+			-- Compensate for tangent range
+			if not (isPositive(midwidth)) then
+				 curtangle = curtangle + math.pi
+			end
+
+			rottangle = (self.angle * (2 * math.pi / 360))
+			tangle = curtangle + rottangle
+
+			-- Offx, offy creates a vector of length 1
+			offx, offy = math.cos(tangle), math.sin(tangle)
+
+			-- Scale that vector to the original length
+			orileng = math.sqrt(midheight * midheight + midwidth * midwidth)
+			offx = offx * orileng
+			offy = offy * orileng
+
+			offy = offy / 2
+			cy = cy / 2
+
+			-- Offset anchor
+			aoffx = 1 * self:getWidth() * self.anchorx
+			aoffy = 1 * self:getHeight() * (self.anchory - 0)
+			love.graphics.point(-aoffx, aoffy)
+
+			m = self:getMesh(x, y)
+			love.graphics.draw(m, offx + midx + aoffx, offy + midx + aoffy)
+		end
+	end
+end
+
+function isPositive(n)
+	return (n / math.abs(n)) == 1
 end
