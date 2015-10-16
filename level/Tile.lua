@@ -79,18 +79,3 @@ end
 function rotate(deg, x, y)
 	return (math.cos(deg) * x) + (math.sin(deg) * y * -1), math.sin(deg) * x + math.cos(deg) * y
 end
-
-function strtable(t)
-	local constr = "Table: \n"
-	
-	for i, line in next, t, nil do
-		if type(line) == 'table' then
-			constr = constr .. strtable(line)
-		else
-			constr = constr .. tostring(i) .. ": " .. tostring(line)
-		end
-		constr = constr .. "\n"
-	end
-	
-	return constr
-end

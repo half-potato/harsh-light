@@ -1,3 +1,13 @@
+require 'util/Util'
+
+--[[
+	How to use:
+	HeldObj is designed to work in tangent with the pickup systems for grids. 
+	To initialize, just use HeldObj.new(<pickup>)
+	The held object, or hobj, can then be confined to a space using the bounding box. The resulting offset is returned to be used for placement
+	X and Y and meant to be the mouse x and y
+]]
+
 HeldObj = {}
 HeldObj.__index = HeldObj
 
@@ -13,25 +23,20 @@ function HeldObj.new(o)
 		locOnObjY = 0,
 		width = 32,
 		height = 32,
-		boundingbox = {
-			x = 0,
-			y = 0,
-			width = math.huge,
-			height = math.huge
-		},
 		obj = {img = nil,
 		 imgname = ""}
 	}
 	o.rubberX = 0
 	o.rubberY = 0
+	o.boundingbox = o.boundingbox or {
+		x = 0,
+		y = 0,
+		width = math.huge,
+		height = math.huge
+	}
 	setmetatable(o, HeldObj)
 	o.__index = o
 	return o
-end
-
-function pt(x, y)
-	love.graphics.setPointSize(10)
-	love.graphics.point(x, y)
 end
 
 function HeldObj:draw(x, y)
@@ -64,6 +69,13 @@ function HeldObj:draw(x, y)
 
 	self.rubberX = bx + tx
 	self.rubberY = by + ty
+
+	if (self.rubberX ~= self.rubberX) then
+		self.rubberX = 0
+	end
+	if (self.rubberY ~= self.rubberY) then
+		self.rubberY = 0
+	end
 
 	love.graphics.draw(self.obj.img, q, x - self.locOnObjX + self.rubberX, y - self.locOnObjY + self.rubberY)
 end

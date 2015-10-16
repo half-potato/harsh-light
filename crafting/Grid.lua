@@ -1,6 +1,19 @@
 -- Can be optimized, grid could store TileType as an array instead of cycling through all objects everytime. Probably neglectable
 -- FindNearestSpotFor can be optimized
 
+require 'util/Util'
+
+--[[
+	How to use:
+	Grid is a class independent of pixel height. It only knows tile width and height. 
+	To draw, use drawBackground() and drawItems()
+	To add items directly with no space check, use addObject()
+	To add items with space checking, use drop(). If there is no space, it will not place it and will return false
+	To pickup objects, use pickUp(). This returns an array with the obj and location where the mouse was on the object. Returns nil if nothing is there
+	getTileTypes and getObjectsAt both return arrays to make the functions useful with objects overlapping
+	The version that automatically shows held objects and remembers tile size is VGrid
+]]
+
 TileType = {
 	Empty = 0,
 	Filler = 1
@@ -18,6 +31,7 @@ exobj = {
 	flatdata = {0, 0, 'A', 0, 0,
 				1, 0,  1 , 0, 0,
 				'C', 1,  1 , 1, 'B'},
+	persistent = false
 }
 
 Grid = {}
@@ -89,6 +103,14 @@ function Grid:getObjectsAt(x, y)
 end
 
 function Grid:canPlaceObjectAt(o, x, y)
+	if ((x < 0 or y < 0) or (x > self.twidth - 2 or y > self.theight - 2)) then
+		return false
+	end
+
+	if ((x + o.twidth > self.twidth) or (y + o.theight > self.theight)) then
+		return false
+	end
+
 	for n, i in ipairs(o.flatdata) do
 		-- Check if our object has an empty spot
 		if not (i == TileType.Empty) then
@@ -160,7 +182,9 @@ function Grid:pickUp(mousex, mousey, gridx, gridy, sizeOfSideOfSquare)
 		return nil
 	else
 		local fobj = objects[#objects][1]
-		table.remove(self.objects, objects[#objects][2])
+		if not (fobj.persistent == true) then
+			table.remove(self.objects, objects[#objects][2])
+		end
 		-- Find object origin in terms of pixels
 		local pobjx = fobj.x * sizeOfSideOfSquare + gridx
 		local pobjy = fobj.y * sizeOfSideOfSquare + gridy
@@ -172,16 +196,20 @@ function Grid:pickUp(mousex, mousey, gridx, gridy, sizeOfSideOfSquare)
 	end
 end
 
-function round(num, decimalplace)
-	local mult = 10^(decimalplace or 0)
-	return math.floor(num * mult + 0.5) / mult
-end
-
-function Grid:drop(mousex, mousey, gridx, gridy, sizeOfSideOfSquare, locOnTilex, locOnTiley, o)
+function Grid:drop(o, mousex, mousey, gridx, gridy, sizeOfSideOfSquare, locOnTilex, locOnTiley)
 	local tx = round((mousex - gridx - locOnTilex) / sizeOfSideOfSquare)
 	local ty = round((mousey - gridy - locOnTiley) / sizeOfSideOfSquare)
 	local pos = self:findNearestSpotFor(o, tx, ty)
 	if not (pos == nil) then
-		self:placeObject(o, pos[1], pos[2])
+		if o.persistent then
+			obj = deepcopy(o)
+			obj.persistent = false
+			self:placeObject(obj, pos[1], pos[2])
+		else
+			self:placeObject(o, pos[1], pos[2])
+		end
+		return true
+	else
+		return false
 	end
 end
