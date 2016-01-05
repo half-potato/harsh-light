@@ -1,48 +1,24 @@
 debug = true
-require 'util/Util'
 
-require 'crafting/VGrid'
-require 'crafting/MultiGrid'
+require 'level/Blob'
 
-grids = nil
+globaltime = 1
+tileSize = 84
 
 function love.load(arg)
-	grid = VGrid.new{twidth = 6, theight = 6, tileSize = 32};
-	grid:placeObject({
-		name = "Radioactive Poop",
-		imgname = "assets/Tiles/Ground_3.png",
-		img = nil,
-		-- Only intiated at placement
-		x = 0,
-		y = 0,
-		persistent = true,
-		twidth = 3,
-		theight = 2,
-		flatdata = {1, 1, 1,
-					1, 1, 1},
-	}
-	, 4, 4)
-	grid.x = 300
-	grid.y = 300
+	map = 
+end
 
-	grids = MultiGrid.new()
-	grids:addGrid(grid)
+function love.update(dt)
+	globaltime = dt + globaltime
 end
 
 function love.draw()
-	--grid:draw(100, 100)
-	grids:draw(100, 100)
-	grids:drawHeldObj(love.mouse.getX(), love.mouse.getY())
+	print(perlinNoise2D(globaltime + 1000003, globaltime + 10000, 1, 3))
 end
 
 function love.mousepressed(x, y, button)
-	if button == "l" then
-		grids:pickUp(x, y, 100, 100)
-	end
 end
 
 function love.mousereleased(x, y, button)
-	if button == "l" then
-		grids:drop(x, y, 100, 100)
-	end
 end

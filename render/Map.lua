@@ -22,10 +22,10 @@ function Map.new(o)
 
 	if (o.tilemap.tmap and o.data) then
 		print("Map has been init")
-		o:updateMesh()
-		rotPX = 0
-		rotPY = 0
 	end
+	o.tmesh = love.graphics.newMesh([0,0,0,0,0,0,0,0], "fan", "stream")
+	rotPX = 0
+	rotPY = 0
 
 	return o
 end
@@ -39,7 +39,7 @@ end
 
 function Map:updateMesh()
 	points = rotatedIsoPoints(self.angle, self.tileset.twidth * self.zoom, self.tileset.theight * self.zoom)
-	self.tmesh = love.graphics.newMesh(points, self.tilemap.tmap)
+	self.tmesh.setVertices(points)
 end
 
 -- Percentage of width, 0 - 1

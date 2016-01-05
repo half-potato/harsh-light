@@ -1,0 +1,22 @@
+BIOME_INDEX = {
+	1 = {name = "OakForest", 
+	green_density=0.80,green_index={1, 2, 3, 4, 6, 7, 8},
+	tile_index={{1, 0.05},{2, 0.85},{3,.1}},
+	entity_index={7,8,9,10},
+	structure_density=0.01, struct_index={{1, 1}}},
+	2 = {name = "BirchForest", 
+	green_density=0.80,green_index={1, 2, 3, 4, 9, 10},
+	tile_index={{1, 0.05},{2, 0.85}},
+	entity_index={7,8,9,10},
+	structure_density=0.01, struct_index={{1, 1}}},
+	3 = {name = "Road", 
+	green_density=0.3,green_index={4, 5},
+	tile_index={{1,0.1},{2,0.1},{6,.9}},
+	entity_index={7,10,11},
+	structure_density=0.1, struct_index={{2,0.5},{4,0.5}}},
+	4 = {name = "Desert", 
+	green_density=0.2,green_index={11, 12},
+	tile_index={{5, .95},{3,0.05}},
+	entity_index={}},
+	5 = {name = "Savannah", green_density=0.2,green_index={2, 3, 4, 8}}
+}
