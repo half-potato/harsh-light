@@ -1,14 +1,13 @@
-GREEN_INDEX = {
-	1 = {name = "Fern"},
-	2 = {name = "Shrub"},
-	3 = {name = "TallGrass"},
-	4 = {name = "ShortGrass"},
-	5 = {name = "Weeds"},
-	6 = {name = "Blueberry"},
-	7 = {name = "TallOakTree"},
-	8 = {name = "ShortOakTree"},
-	9 = {name = "TallBirchTree"},
-	10 = {name = "TallBirchTree"},
-	11 = {name = "FlowerCactus"},
-	12 = {name = "Cactus"}
-}
+GREEN_INDEX = {}
+GREEN_INDEX[1]={name = "Fern"}
+GREEN_INDEX[2]={name = "Shrub"}
+GREEN_INDEX[3]={name = "TallGrass"}
+GREEN_INDEX[4]={name = "ShortGrass"}
+GREEN_INDEX[5]={name = "Weeds"}
+GREEN_INDEX[6]={name = "Blueberry"}
+GREEN_INDEX[7]={name = "TallOakTree"}
+GREEN_INDEX[8]={name = "ShortOakTree"}
+GREEN_INDEX[9]={name = "TallBirchTree"}
+GREEN_INDEX[10]={name = "TallBirchTree"}
+GREEN_INDEX[11]={name = "FlowerCactus"}
+GREEN_INDEX[12]={name = "Cactus"}

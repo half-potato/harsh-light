@@ -1,7 +1,5 @@
 require 'level/Chunk'
 require 'util/Noise'
-require 'util/Biome'
-require 'util/Tile'
 
 Blob = {}
 Blob.__index = Blob
