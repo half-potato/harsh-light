@@ -1,8 +1,9 @@
 require 'util/Noise'
+require 'util/Util'
 require 'level/biome/Biome'
 require 'level/tile/Tile'
 require 'level/green/Green'
-require 'level/struct/Structure'
+require 'level/struct/Struct'
 
 Chunk = {}
 Chunk.__index = Chunk
@@ -39,15 +40,15 @@ function Chunk.new(o)
 					o.biomes[x][y] = biome
 					o.tiles[x][y] = tile
 					if entity > 0 then
-						o.entities[#o.entities + 1] = ENTITY_INDEX[entity].copy()
+						o.entities[#o.entities + 1] = deepcopy(ENTITY_INDEX[entity])
 						o.entities[#o.entities].pos = {x = x, y = y}
 					end
 					if green > 0 then
-						o.green[#o.green + 1] = GREEN_INDEX[green].deepcopy()
+						o.green[#o.green + 1] = deepcopy(GREEN_INDEX[green])
 						o.green[#o.green].pos = {x = x, y = y}
 					end
 					if struct > 0 then
-						o.struct[#o.green + 1] = STRUCT_INDEX[struct].copy()
+						o.struct[#o.green + 1] = deepcopy(STRUCT_INDEX[struct])
 						o.struct[#o.struct].pos = {x = x, y = y}
 					end
 				end
@@ -60,20 +61,19 @@ end
 function Chunk:genBiome(x, y, seed)
 	noise = perlinNoise2D((x + seed) / 10, (y + seed) / 10, 1/4, 3)
 	-- range is from 1 - 2
-	return math.ceil((#BIOME_INDEX / (noise - 1)) + 0.001)
+	return math.ceil((#BIOME_INDEX * (noise)) + 0.001)
 end
 
 -- Must be called second
 function Chunk:genTile(x, y, seed, biome)
-	biome = biomes[x][y]
 	noise = perlinNoise2D(x + seed, y + seed, 1/2, 3)
-	
-	t = noise - 1
+	print(noise)
+	t = noise	
 	prob = 0
-	for i in BIOME_INDEX[biome].tile_index do
-		prob = prob + i.1
+	for x=1, #BIOME_INDEX do
+		l = BIOME_INDEX[biome].tile_index[x]
 		if t > prob then
-			return i.0
+			return l[0]
 		end
 	end
 
@@ -83,15 +83,15 @@ end
 -- Rest have no order
 function Chunk:genGreenery(x, y, seed, biome, tile)
 	noise = perlinNoise2D(x + (seed / 4), y + (seed / 1.2), 1, 3)
-	biome = BIOME_INDEX[biomes[x][y]]
-	if (math.floor((noise - 1) / biome.green_density) == 1)
+	if (math.floor((noise) / BIOME_INDEX[biome].green_density) == 1)
 		and (TILE_INDEX[tiles[x][y]].isGrowable) then
-		t = noise - 1
+		t = noise
 		prob = 0
-		for i in BIOME_INDEX[biome].green_index do
-			prob = prob + i.1
+		for x=1, #BIOME_INDEX do
+			l = BIOME_INDEX[biome].green_index[x]
+			prob = prob + l[1]
 			if t > prob then
-				return i.0
+				return l[0]
 			end
 		end
 			
@@ -102,15 +102,15 @@ end
 
 function Chunk:genEntity(x, y, seed, biome, tile)
 	noise = perlinNoise2D(x + (seed / 3), y + (seed / math.pi / 2), 1, 3)
-	biome = BIOME_INDEX[biomes[x][y]]
-	if (math.floor((noise - 1) / biome.spawn_density) == 1) 
+	if (math.floor((noise) / BIOME_INDEX[biome].entity_density) == 1) 
 		and (TILE_INDEX[tiles[x][y]].isSpawnable) then
-		t = noise - 1
+		t = noise
 		prob = 0
-		for i in BIOME_INDEX[biome].entity_index do
-			prob = prob + i.1
+		for x=1, #BIOME_INDEX do
+			l = BIOME_INDEX[biome].entity_index
+			prob = prob + l[1]
 			if t > prob then
-				return i.0
+				return l[0]
 			end
 		end
 	end
@@ -119,17 +119,17 @@ end
 
 function Chunk:genStructure(x, y, seed, biome, tile)
 	noise = perlinNoise2D(x + (seed / math.pi), y + (seed / 3.2), 1, 3)
-	biome = BIOME_INDEX[biomes[x][y]]
-	if (math.floor((noise - 1) / biome.structure_density) == 1) 
-		and (TILE_INDEX[tiles[x][y]].isSolid) then
-		t = noise - 1
+	if (math.floor((noise - 1) / BIOME_INDEX[biome].struct_density) == 1) then
 		prob = 0
-		for i in BIOME_INDEX[biome].struct_index do
-			prob = prob + i.1
+		t = noise
+		for x=1, #BIOME_INDEX do
+			l = BIOME_INDEX[biome].struct_index
+			prob = prob + l[1]
 			if t > prob then
-				return i.0
+				return l[0]
 			end
 		return i
+		end
 	end
 	return 0
 end
@@ -141,4 +141,4 @@ function Chunk:gen(x, y, seed)
 	entity = self:genEntity(x, y, seed, biome, tile)
 	struct = self:genStructure(x, y, seed, biome, tile)
 	return biome, tile, green, entity, struct
-
+end

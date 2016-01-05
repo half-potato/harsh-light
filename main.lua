@@ -1,12 +1,15 @@
 debug = true
 
 require 'level/Blob'
+require 'level/Chunk'
+require 'util/Util'
 
 globaltime = 1
 tileSize = 84
 
 function love.load(arg)
-	map = 
+	map = Chunk.new{seed=1230971384, x = 0, y = 0}
+	print_r(map)
 end
 
 function love.update(dt)
@@ -14,7 +17,6 @@ function love.update(dt)
 end
 
 function love.draw()
-	print(perlinNoise2D(globaltime + 1000003, globaltime + 10000, 1, 3))
 end
 
 function love.mousepressed(x, y, button)
