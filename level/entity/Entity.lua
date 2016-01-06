@@ -13,4 +13,4 @@ ENTITY_INDEX[11]={name="Roadhog"}
 ENTITY_INDEX[12]={name="SerBuffalo"}
 ENTITY_INDEX[13]={name="Squirrel"}
 ENTITY_INDEX[14]={name="ManEater"}
-ENTITY_INDEX[15]={name="Monkey"
+ENTITY_INDEX[15]={name="Monkey"}

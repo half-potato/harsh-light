@@ -21,8 +21,9 @@ BIOME_INDEX[4] =
 {name = "Desert", 
 green_density=0.2,green_index={{11, 0.50}, {12, 0.50}},
 tile_index={{5, .95},{3,0.05}},
-entity_density=0.0001, entity_index={{1, 0.1}, {4, 0.2}, {5, 0.15}, {6, 0.05}}}
-BIOME_INDEX[4] = 
+entity_density=0.0001, entity_index={{1, 0.1}, {4, 0.2}, {5, 0.15}, {6, 0.05}},
+struct_density=0.0002, struct_index={{2, 0.5}, {3, 0.25}, {4, 0.25}}}
+BIOME_INDEX[5] = 
 {name = "Savannah", 
 green_density=0.2,green_index={{2, 0.5}, {3, 0.29}, {4, 0.2}, {8, 0.01}},
 tile_index={{7, 1.0}},

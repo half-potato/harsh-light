@@ -3,12 +3,13 @@ debug = true
 require 'level/Blob'
 require 'level/Chunk'
 require 'util/Util'
+require 'util/Noise'
 
 globaltime = 1
 tileSize = 84
 
 function love.load(arg)
-	map = Chunk.new{seed=1230971384, x = 0, y = 0}
+	map = Chunk.new{seed=5, x = 0, y = 0}
 	print_r(map)
 end
 
@@ -17,6 +18,7 @@ function love.update(dt)
 end
 
 function love.draw()
+	draw(300, 300)
 end
 
 function love.mousepressed(x, y, button)
