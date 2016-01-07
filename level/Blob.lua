@@ -18,10 +18,11 @@ function Blob.new(o)
 		self.chunks = {}
 	end
 	setmetatable(o, Blob)
+	o:genChunks(-5, -5, 5, 5)
 	return o
 end
 
-function Blob.genChunks(x, y, x2, y2)
+function Blob:genChunks(x, y, x2, y2)
 	for ix = x, x2 do
 		if not o.chunks[ix] then
 			o.chunks[ix] = {}
