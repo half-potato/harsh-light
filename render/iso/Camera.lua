@@ -13,11 +13,16 @@ function Camera.new(o)
 end
 
 function Camera:translateViewToMap(x, y)
-
+	
 end
 
-function Camera
+function Camera:getImagesAt(blob, x, y)
+	biomen, tilen, greenn, entityn, structn = blob:getData(x, y)
 
-function Camera:draw(blob, x, y)
-
+-- Mode: 1 - top is top right, 2 - top is bot right, 3 - top is bot left, 4 - top is top left
+-- X, Y - origin
+-- W, H - screen size
+-- MX, MY - center tile
+function Camera:draw(blob, x, y, w, h, mx, my, mode)
+		
 end

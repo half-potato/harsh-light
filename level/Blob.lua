@@ -32,3 +32,11 @@ function Blob:genChunks(x, y, x2, y2)
 		end
 	end
 end
+
+function Blob:getChunkContaining(x, y)
+	return self.chunks[math.ceil(x / 16)][math.ceil(y / 16)]
+end
+
+function Blob:getData(x, y)
+	return self:getChunkContaining(x, y):getData(16 * (x % 16), 16 * (y % 16))
+end

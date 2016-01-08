@@ -27,17 +27,18 @@ function Chunk.new(o)
 				end
 			end
 		else
+			love.math.setRandomSeed(o.seed)
 			o.biomes = {}
 			o.tiles = {}
 			o.entities = {}
 			o.green = {}
 			o.struct = {}
 
-			nbiome = genMap(16, 16, #BIOME_INDEX)
-			ntile = genMap(16, 16, 1)
-			ngreen = genMap(16, 16, 1)
-			nentity = genMap(16, 16, 1)
-			nstruct = genMap(16, 16, 1)
+			nbiome = genMap(16, 16, #BIOME_INDEX, 16)
+			ntile = genMap(16, 16, 1, 30)
+			ngreen = genMap(16, 16, 1, 1000)
+			nentity = genMap(16, 16, 1, 1000)
+			nstruct = genMap(16, 16, 1, 1000)
 
 			for x = 1, 16 do
 				o.tiles[x] = {}
@@ -65,6 +66,30 @@ function Chunk.new(o)
 	return o
 end
 
+function Chunk:getData(x, y)
+	b = self.biomes[x][y]
+	t = self.tiles[x][y]
+	g = 0
+	for i=1, #self.green do
+		if (self.green[i].pos.x == x) and (self.green[i].pos.y == y) then
+			g = self.green[i]
+		end
+	end
+	e = 0
+	for i=1, #self.entities do
+		if (self.entities[i].pos.x == x) and (self.entities[i].pos.y == y) then
+			e = self.entities[i]
+		end
+	end
+	s = 0
+	for i=1, #self.struct do
+		if (self.struct[i].pos.x == x) and (self.struct[i].pos.y == y) then
+			g = self.struct[i]
+		end
+	end
+	return b, t, g, e, s
+end
+
 -- Must be called second
 function Chunk:genTile(val, biome)
 	t = val	
@@ -85,6 +110,7 @@ function Chunk:genGreenery(val, biome, tile)
 		and (TILE_INDEX[tile].isGrowable) then
 		t = val
 		prob = 0
+		print(t)
 		for x=1, #(BIOME_INDEX[biome].green_index)do
 			l = BIOME_INDEX[biome].green_index[x]
 			prob = prob + l[2]
@@ -92,7 +118,8 @@ function Chunk:genGreenery(val, biome, tile)
 				return l[1]
 			end
 		end
-		return BIOME_INDEX[biome].green_index[#BIOME_INDEX[biome].green_index]
+		print("Fallback")
+		return BIOME_INDEX[biome].green_index[#BIOME_INDEX[biome].green_index][1]
 	else
 		return 0
 	end

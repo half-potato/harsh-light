@@ -71,12 +71,11 @@ function perlinNoise2D(x, y, amp, freq, octaves)
 	return n * mapMulti
 end
 
-function genMap(mapWidth, mapHeight, max)
+function genMap(mapWidth, mapHeight, max, freq)
 	mapMin = interpNoise(0, 0)
 	mapMax = mapMin
 	map = {}
-	amp = 20
-	freq = 5
+	amp = 100
 	octaves = 6
 	for x = 1, mapWidth do
 		map[x] = {}
@@ -101,7 +100,7 @@ function genMap(mapWidth, mapHeight, max)
 end
 
 function draw(mapWidth, mapHeight)
-	nmap = genMap(mapWidth, mapHeight, 255)
+	nmap = genMap(mapWidth, mapHeight, 255, 256)
 	for x = 1, mapWidth do
 		for y = 1, mapHeight do
 			love.graphics.setColor(nmap[x][y], nmap[x][y], nmap[x][y], 255)
