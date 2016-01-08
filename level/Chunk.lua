@@ -110,7 +110,6 @@ function Chunk:genGreenery(val, biome, tile)
 		and (TILE_INDEX[tile].isGrowable) then
 		t = val
 		prob = 0
-		print(t)
 		for x=1, #(BIOME_INDEX[biome].green_index)do
 			l = BIOME_INDEX[biome].green_index[x]
 			prob = prob + l[2]
@@ -118,7 +117,6 @@ function Chunk:genGreenery(val, biome, tile)
 				return l[1]
 			end
 		end
-		print("Fallback")
 		return BIOME_INDEX[biome].green_index[#BIOME_INDEX[biome].green_index][1]
 	else
 		return 0
