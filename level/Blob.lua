@@ -22,13 +22,19 @@ function Blob.new(o)
 	return o
 end
 
+function Blob:genChunk(x, y)
+	if not o.chunks[x] then
+		o.chunks[x] = {}
+	end
+	if not o.chunks[x][y] then
+		self.chunks[x][y] = Chunk.new{x=x, y=y, seed=self.seed}
+	end
+end
+
 function Blob:genChunks(x, y, x2, y2)
 	for ix = x, x2 do
-		if not o.chunks[ix] then
-			o.chunks[ix] = {}
-		end
 		for iy = x, y2 do
-			self.chunks[ix][iy] = Chunk.new{x=ix, y=iy, seed=self.seed}
+			self:genChunk(ix, iy)
 		end
 	end
 end
