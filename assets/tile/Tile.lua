@@ -7,6 +7,7 @@ return {
 		Sand = {4},
 		Stone = {5},
 		Water = {6},
-		Straw = {7}
+		Straw = {7},
+		Brick = {8}
 	}
 }

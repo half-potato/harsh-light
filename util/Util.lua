@@ -55,7 +55,7 @@ end
 
 function pt(x, y)
 	love.graphics.setPointSize(10)
-	love.graphics.point(x, y)
+	love.graphics.points(x, y)
 end
 
 function equals(o1, o2, ignore_mt)

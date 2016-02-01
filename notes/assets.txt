@@ -4,4 +4,4 @@ twidth = however many pixels wide the tiles are
 theight = however many pixels height the tiles are
 sheetW = however many tiles there are in a row
 seperatorW = however wide the tile seperators are (use 1 unless there is a reason not to)
-tmeta = an array of the names of the tiles and their indicies. The index on a tile is an array of the indicies for that tile, allowing for multiple versions of the same tile. If you are adding a non-standard sized tile, do not put an index; instead, put an array of maps with the x, y, width, height of the sprite on the image
+tmeta = a map of the names of the tiles that point to their indicies. The index on a tile is an array of the indicies for that tile, allowing for multiple versions of the same tile. If you are adding a non-standard sized tile, put an array of arrays that have the x, y, width, height of the sprite on the image

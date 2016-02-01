@@ -13,18 +13,23 @@ function AssetPackage.new(o)
 	o = o or {}
 	setmetatable(o, AssetPackage)
 	if o.folder then
-		o.files = getFilesInFolder(o.folder, 10)
+		o = getFilesInFolder(o.folder, 10)
 	end
+	setmetatable(o, AssetPackage)
 	return o
 end
 
-function AssetPacka:getFile(path)
-	local curDir = self.files
+function AssetPackage:getFile(path)
+	local curDir = self
 	local splitPath = {}
 	for i in string.gmatch(path, "[^/]+") do
 		splitPath[#splitPath+1] = i
 	end
 	for i=1, #splitPath do
+		if not curDir then
+			print("Could not find the file:" .. path)
+			return nil
+		end
 		curDir = curDir[splitPath[i]]
 	end
 	return curDir
@@ -49,7 +54,7 @@ function getFilesInFolder(path, recursionDepth)
 				if recursionDepth > 0 then
 					local d = love.filesystem.getDirectoryItems(path .. "/" .. fold[i])
 					if d and #d > 0 then
-						local contents = getImagesInFolder(path .. "/" .. fold[i], recursionDepth - 1)
+						local contents = getFilesInFolder(path .. "/" .. fold[i], recursionDepth - 1)
 						if contents then
 							images[fold[i]] = {}
 							for k, v in pairs(contents) do
@@ -102,34 +107,46 @@ end
 
 -- Edits the table passed in
 function loadAssets(table, pathToTilesheet, pathToTileInfo, assetPackage)
-	local tinfo = assetPackage:getFile(pathToTileInfo)()
+	local tinfo = assetPackage:getFile(pathToTileInfo)
 	local img = assetPackage:getFile(pathToTilesheet)
-	local imgw = img:getWidth()
-	local imgh = img:getHeight()
 	if img and tinfo then
+		tinfo = tinfo()
+		local imgw = img:getWidth()
+		local imgh = img:getHeight()
 		for i=1, #table do
 			--sometime there can be more than 1 texture per a tile
-			local indicies = tinfo[table[i].name]
+			local indicies = tinfo.tmeta[table[i].name]
 			local quads = {}
-			if not index then
-				local metas = tinfo[table[i].name].meta
+			if not indicies then
+				print("Could not find the asset for:" .. table[i].name)
+				break
+			end
+			if type(indicies[1]) == type({}) then
+				local metas = tinfo.tmeta[table[i].name]
 				for i=1, #metas do
-					meta = meta[i]
-					quads[#quads+1] = love.graphics.newQuad(meshPoints(meta.x, meta.y, meta.width, meta.height))
+					meta = metas[i]
+					quads[#quads+1] = love.graphics.newQuad(meta.x, meta.y, meta.width, meta.height, imgw, imgh)
 				end
 			else
-				for i=1, #indicies do
-					local index = indicies[i]
+				for i2=1, #indicies do
+					-- indicies start at 0
+					-- There is a starting seperator
+					local index = indicies[i2]
 					local yi = math.floor(index / tinfo.sheetW)
-					local xi = index - yi
-					local y = tinfo.theight * yi + (yi-1) * tinfo.seperatorW
-					local x = tinfo.twidth * xi + (xi-1) * tinfo.seperatorW
-					quads[#quads+1] = love.graphics.newMesh(meshPoints(x, y, tinfo.twidth, tinfo.theight), "fan", "static")
+					local xi = index % tinfo.sheetW
+					local y = tinfo.theight * yi + (yi) * tinfo.seperatorW
+					local x = tinfo.twidth * xi + (xi) * tinfo.seperatorW
+					quads[#quads+1] = love.graphics.newQuad(x, y, tinfo.twidth, tinfo.theight, imgw, imgh)
 				end
 			end
 			table[i].quads = quads
 		end
 	else
-		print("Could not locate either the tinfo or image. Path invalid.")
+		if not tinfo then
+			print("Could not locate tinfo at path:" .. pathToTileInfo)
+		end
+		if not img then
+			print("Could not locate image at path:" .. pathToTilesheet)
+		end
 	end
 end

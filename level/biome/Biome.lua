@@ -29,3 +29,5 @@ green_density=0.2,green_index={{2, 0.5}, {3, 0.29}, {4, 0.2}, {8, 0.01}},
 tile_index={{7, 1.0}},
 entity_density=0.01, entity_index={{10, 0.5}, {11, 0.05}, {12, 0.45}},
 struct_density=0.0025, struct_index={{4, 1.0}}}
+
+BIOME_PROB = {{1,.25}, {2,.25}, {3,.10}, {4, .20}, {5, .20}}

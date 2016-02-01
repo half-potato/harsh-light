@@ -14,6 +14,7 @@ setmetatable(Chunk, {
 	end,
 })
 
+-- either has tiles or seed + x and y
 function Chunk.new(o)
 	o = o or {}
 	setmetatable(o, Chunk)
@@ -27,35 +28,39 @@ function Chunk.new(o)
 				end
 			end
 		else
-			love.math.setRandomSeed(o.seed)
+			local s = o.seed / math.pow(10, math.floor(math.log(o.seed, 10)))
 			o.biomes = {}
 			o.tiles = {}
 			o.entities = {}
 			o.green = {}
 			o.struct = {}
-
-			nbiome = genMap(16, 16, #BIOME_INDEX, 16)
-			ntile = genMap(16, 16, 1, 30)
-			ngreen = genMap(16, 16, 1, 1000)
-			nentity = genMap(16, 16, 1, 1000)
-			nstruct = genMap(16, 16, 1, 1000)
-
 			for x = 1, 16 do
 				o.tiles[x] = {}
 				o.biomes[x] = {}
 				for y = 1, 16 do
-					biome, tile, green, entity, struct = o:gen(math.ceil(nbiome[x][y]) - 1, ntile[x][y], ngreen[x][y], nentity[x][y], nstruct[x][y])
+					local t = 0.5
+					local nbiome = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.30, s*10), 2) * 2
+					nbiome = math.min(1, nbiome)
+					local ntile = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.15, s*10), 2) * 2
+					ntile = math.min(1, ntile)
+					local nentity = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.25, s*10), 2) * 2
+					nentity = math.min(1, nentity)
+					local nstruct = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.75, s*10), 2) * 2
+					nstruct = math.min(1, nstruct)
+					local ngreen = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.5, s*10), 2) * 2
+					ngreen = math.min(1, ngreen)
+					local biome, tile, green, entity, struct = o:gen(nbiome, ntile, ngreen, nentity, nstruct)
 					o.biomes[x][y] = biome
 					o.tiles[x][y] = tile
-					if entity > 0 then
+					if entity then
 						o.entities[#o.entities + 1] = deepcopy(ENTITY_INDEX[entity])
 						o.entities[#o.entities].pos = {x = x, y = y}
 					end
-					if green > 0 then
+					if green then
 						o.green[#o.green + 1] = deepcopy(GREEN_INDEX[green])
 						o.green[#o.green].pos = {x = x, y = y}
 					end
-					if struct > 0 then
+					if struct then
 						o.struct[#o.struct + 1] = deepcopy(STRUCT_INDEX[struct])
 						o.struct[#o.struct].pos = {x = x, y = y}
 					end
@@ -90,75 +95,83 @@ function Chunk:getData(x, y)
 	return b, t, g, e, s
 end
 
--- Must be called second
-function Chunk:genTile(val, biome)
-	t = val	
-	prob = 0
-	for x=1, #(BIOME_INDEX[biome].tile_index) do
-		l = BIOME_INDEX[biome].tile_index[x]
-		if t > prob then
-			return l[x]
+function Chunk:genBiome(v)
+	local prob = 0
+	for x=1, #BIOME_PROB do
+		local l = BIOME_PROB[x]
+		prob = prob + l[2]
+		if v <= prob then
+			return l[1]
 		end
 	end
 
-	return 1
+	return nil
+end
+
+-- Must be called second
+function Chunk:genTile(v, biome)
+	local prob = 0
+	for x=1, #(BIOME_INDEX[biome].tile_index) do
+		local l = BIOME_INDEX[biome].tile_index[x]
+		prob = prob + l[2]
+		if v <= prob then
+			return l[1]
+		end
+	end
+
+	return nil
 end
 
 -- Rest have no order
-function Chunk:genGreenery(val, biome, tile)
-	if (math.floor((val) / BIOME_INDEX[biome].green_density + 0.5) == 1)
-		and (TILE_INDEX[tile].isGrowable) then
-		t = val
-		prob = 0
+function Chunk:genGreenery(v, biome, tile)
+	if (v < BIOME_INDEX[biome].green_density) and TILE_INDEX[tile].isGrowable then
+		local prob = 0
 		for x=1, #(BIOME_INDEX[biome].green_index)do
-			l = BIOME_INDEX[biome].green_index[x]
+			local l = BIOME_INDEX[biome].green_index[x]
 			prob = prob + l[2]
-			if t < prob then
+			if v <= prob then
 				return l[1]
 			end
 		end
-		return BIOME_INDEX[biome].green_index[#BIOME_INDEX[biome].green_index][1]
 	else
-		return 0
+		return nil
 	end
 end
 
-function Chunk:genEntity(val, biome, tile)
-	if (math.floor((val) / BIOME_INDEX[biome].entity_density + 0.5) == 1) 
-		and (TILE_INDEX[tile].isSpawnable) then
-		t = val
-		prob = 0
+function Chunk:genEntity(v, biome, tile, struct)
+	if (v < BIOME_INDEX[biome].entity_density) and TILE_INDEX[tile].isSpawnable and (not struct) then
+		local prob = 0
 		for x=1, #(BIOME_INDEX[biome].entity_index)do
-			l = BIOME_INDEX[biome].entity_index[x]
+			local l = BIOME_INDEX[biome].entity_index[x]
 			prob = prob + l[2]
-			if t < prob then
+			if v <= prob then
 				return l[1]
 			end
 		end
 	end
-	return 0
+	return nil
 end
 
-function Chunk:genStructure(val, biome, tile)
-	if (math.floor((val - 1) / BIOME_INDEX[biome].struct_density + 0.5) == 1) then
-		prob = 0
-		t = val
+function Chunk:genStructure(v, biome, tile, green)
+	if (v < BIOME_INDEX[biome].struct_density) and not green then
+		local prob = 0
 		for x=1, #(BIOME_INDEX[biome].struct_index)do
-			l = BIOME_INDEX[biome].struct_index
-			prob = prob + l[x][2]
-			if t < prob then
-				return l[x][1]
+			local l = BIOME_INDEX[biome].struct_index[x]
+			prob = prob + l[2]
+			if v <= prob then
+				return l[1]
 			end
 		return i
 		end
 	end
-	return 0
+	return nil
 end
 
 function Chunk:gen(biome, tile, green, entity, struct)
-	tile = self:genTile(tile, biome)
-	green = self:genGreenery(green, biome, tile)
-	entity = self:genEntity(entity, biome, tile)
-	struct = self:genStructure(struct, biome, tile)
-	return biome, tile, green, entity, struct
+	b = self:genBiome(biome)
+	t = self:genTile(tile, b)
+	g = self:genGreenery(green, b, t)
+	s = self:genStructure(struct, b, t, g)
+	e = self:genEntity(entity, b, t, s)
+	return b, t, g, e, s
 end

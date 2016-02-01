@@ -11,22 +11,22 @@ setmetatable(Blob, {
 
 function Blob.new(o)
 	o = o or {}
+	setmetatable(o, Blob)
 	if not o.seed then
 		o.seed = love.math.noise(os.time(), os.time())
 	end
 	if not o.chunks then
-		self.chunks = {}
+		o.chunks = {}
+		o:genChunks(-5, -5, 5, 5)
 	end
-	setmetatable(o, Blob)
-	o:genChunks(-5, -5, 5, 5)
 	return o
 end
 
 function Blob:genChunk(x, y)
-	if not o.chunks[x] then
-		o.chunks[x] = {}
+	if not self.chunks[x] then
+		self.chunks[x] = {}
 	end
-	if not o.chunks[x][y] then
+	if not self.chunks[x][y] then
 		self.chunks[x][y] = Chunk.new{x=x, y=y, seed=self.seed}
 	end
 end
