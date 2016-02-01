@@ -1,3 +1,5 @@
+require 'entity/Entity'
+
 ENTITY_INDEX = {}
 ENTITY_INDEX[1]={name="SandHowler"}
 ENTITY_INDEX[2]={name="FrostGale"}
@@ -14,3 +16,5 @@ ENTITY_INDEX[12]={name="SerBuffalo"}
 ENTITY_INDEX[13]={name="Squirrel"}
 ENTITY_INDEX[14]={name="ManEater"}
 ENTITY_INDEX[15]={name="Monkey"}
+
+
