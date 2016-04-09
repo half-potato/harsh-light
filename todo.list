@@ -1,0 +1,26 @@
+Engine
+       *Random generation
+       *World rendering
+       *Grid interaction
+       *Asset loading
+       Entity rendering and animation loading
+       Main character and controls
+       Entity manager
+       Entity AI (random walks)
+
+Essential
+       Inventory
+       Items
+       Saving
+       Main menu
+       Proper random generation
+
+Base Game
+       Crafting system
+       World interaction
+       Vehicles
+       Combat
+
+Notes:
+       Grids need to be updated to the new asset loading methods
+	   Items are just an implementation of the grid items with auto placement into inventory
