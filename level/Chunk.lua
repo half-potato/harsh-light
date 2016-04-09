@@ -71,6 +71,7 @@ function Chunk.new(o)
 	return o
 end
 
+-- returns turple the values biome, tile type, greenery, entity, structure
 function Chunk:getData(x, y)
 	b = self.biomes[x][y]
 	t = self.tiles[x][y]

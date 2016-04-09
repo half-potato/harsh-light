@@ -46,3 +46,12 @@ end
 function Blob:getData(x, y)
 	return self:getChunkContaining(x, y):getData(16 * (x % 16), 16 * (y % 16))
 end
+
+function Blob:isTileOpen(x, y)
+	local _, _, greenery, entity, structure = self:getData(x, y)
+	if greenery.doesOccupy or entity.doesOccupy or structure.doesOccupy then
+		return true
+	else
+		return false
+	end
+end
