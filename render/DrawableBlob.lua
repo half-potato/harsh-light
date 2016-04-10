@@ -1,26 +1,28 @@
 require 'level/Blob'
 require 'util/Img'
 
-Level = {}
-Level.__index = Level
-setmetatable(Level, {
+DrawableBlob = {}
+DrawableBlob.__index = DrawableBlob
+setmetatable(DrawableBlob, {
 	__call = function (cls, ...)
 		return cls.new(...)
 	end
 })
 
 -- quadmode = "iso" or "flat"
-function Level.new(o)
+function DrawableBlob.new(o)
 	o = o or {}
-	o = Blob.new(o)
-	setmetatable(o, Level)
+	if not self.chunks then
+		o = Blob.new(o)
+	end
+	setmetatable(o, DrawableBlob)
 	o.twidth = o.twidth or 62
 	o.theight = o.theight or 32
 	o.meshBase = meshPoints(0, 0, o.twidth, o.theight, o.quadmode)
 	return o
 end
 
-function Level:genMesh(x, y, scale)
+function DrawableBlob:genMesh(x, y, scale)
 	points = self.meshBase
 	for i=1, #points do
 		points[i][1] = points[i][1] * scale + x
@@ -29,8 +31,62 @@ function Level:genMesh(x, y, scale)
 	return love.graphics.newMesh(points, "fan", "static")
 end
 
+function DrawableBlob:drawEntity(entity, x, y, scale)
+	local quad, texture = entity:getCurrentImg()
+	love.graphics.draw(texture, quad, x, y, 0, scale, scale)
+end
+
+function DrawableBlob:drawEntities(chunksToLoad, scale, mode, ox, oy)
+	entities = {}
+	for i=1, #chunksToLoad do
+		local cx, cy = chunksToLoad[i][1], chunksToLoad[i][2]
+		for x=1, #self.chunks[cx][cy][layer] do
+			entities[#entities+1] = {self.chunks[cx][cy][layer][x], cx, cy}
+		end
+	end
+	if #entities > 0 then
+		for i=1, #entities do
+			--If chunk does not exist, generate it
+			cx, cy = entities[i][2], entities[i][3]
+			local c = self.chunks[cx][cy]
+			if not c then
+				self:genChunk(cx, cy)
+				c = self.chunks[cx][cy]
+			end
+			local entity = entities[i][1]
+			-- Position in chunk + chunk position in map = flat position
+			--Tile position
+			local tx, ty = cx*16 + entity.pos.x, cy*16 + entity.pos.y
+			--Screen position
+			local ax = tx * self.twidth * scale
+			local ay = ty * self.theight * scale
+			--Even or odd row? For zigzag isometric view
+			local o = ty % 2
+			local cases = {
+				flat = {
+					x = ax,
+					y = ay},
+				isozig = {
+					-- figure out if even or odd row
+					x = ax + ((o * self.twidth * scale) / 2),
+					-- also offset for building up decreas
+					y = ay - ((o * self.theight * scale) / 2) 
+					- ((math.floor(ty/2)+1) * self.theight)
+					},
+				iso = {
+					x = (tx-ty) * (self.twidth/2),
+					y = (ty+tx) * (self.theight/2)}
+			}
+			--Translate that position to create positions for the sprites
+			local x = cases[mode].x + ox
+			local y = cases[mode].y + oy
+			self:drawEntity(entity, x, y, scale)
+		end
+	end
+end
+
 -- Layer can be "green" or "struct"
-function Level:objectSpriteBatch(chunksToLoad, tilesheet, scale, mode, layer)
+function DrawableBlob:objectSpriteBatch(chunksToLoad, tilesheet, scale, mode, layer)
 	scale = scale or 1
 	-- Create spritebatch
 	-- Size depends on the amount of objects in the array
@@ -92,9 +148,9 @@ function Level:objectSpriteBatch(chunksToLoad, tilesheet, scale, mode, layer)
 		return nil
 	end
 end
---chunksToLoad = {{x, y}}. Layer = "biomes", "tiles", "entities", "green", or "struct"
+--chunksToLoad = {{x, y}} 
 -- Mode = placement mode. Can be iso, isozig, flat
-function Level:tileSpriteBatch(chunksToLoad, tilesheet, scale, mode)
+function DrawableBlob:tileSpriteBatch(chunksToLoad, tilesheet, scale, mode)
 	scale = scale or 1
 	--Calculate min and max to determine the size of the sprite batch
 	local minX = chunksToLoad[1][1] 
@@ -173,4 +229,11 @@ function Level:tileSpriteBatch(chunksToLoad, tilesheet, scale, mode)
 		end
 	end
 	return spriteBatch
+end
+
+function DrawableBlob:draw(chunksToLoad, scale, mode, ox, oy)
+	self:drawEntities (chunksToLoad, scale, mode, ox, oy)
+	tmap = map:tileSpriteBatch(chunksToLoad, gAssetPackage.tile["Tile.png"], scale, mode)
+	gmap = map:objectSpriteBatch(chunksToLoad, gAssetPackage.green["Green.png"], scale, mode, "green")
+	smap = map:objectSpriteBatch(chunksToLoad, gAssetPackage.struct["Struct.png"], scale, mode, "struct")
 end

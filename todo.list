@@ -3,9 +3,11 @@ Engine
        *World rendering
        *Grid interaction
        *Asset loading
+	   *Collision Detection
+       *Entity manager
+	   Entity loading and unloading system
        Entity rendering and animation loading
        Main character and controls
-       Entity manager
        Entity AI (random walks)
 
 Essential

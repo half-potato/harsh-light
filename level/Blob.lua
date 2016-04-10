@@ -15,6 +15,7 @@ function Blob.new(o)
 	if not o.seed then
 		o.seed = love.math.noise(os.time(), os.time())
 	end
+	o.existingChunks = o.existingChunks or {}
 	if not o.chunks then
 		o.chunks = {}
 		o:genChunks(-5, -5, 5, 5)
@@ -23,11 +24,13 @@ function Blob.new(o)
 end
 
 function Blob:genChunk(x, y)
+	-- Generate row if non-existent
 	if not self.chunks[x] then
 		self.chunks[x] = {}
 	end
 	if not self.chunks[x][y] then
 		self.chunks[x][y] = Chunk.new{x=x, y=y, seed=self.seed}
+		table.insert(self.existingChunks, {x=x, y=y})
 	end
 end
 

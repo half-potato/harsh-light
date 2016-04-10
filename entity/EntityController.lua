@@ -24,6 +24,7 @@ function EntityController:update(dt)
 		for i, 1, #line do
 			line[i].update(dt)
 			line[i] = self:newEntityWithPos(line[i])
+			-- unload entities that go off the loaded area
 		end
 		-- Updates that take role into account
 	end
@@ -70,4 +71,14 @@ end
 
 function EntityController:addEntity(entity, role)
 	table.insert(self.entities[role], entity)
+end
+
+function EntityController:addEntities(entities, roles)
+	for i, 1, #entities do
+		self:addEntity(entities[i], roles[i])
+	end
+end
+
+function EntityController:unloadEntity(entity, role, map)
+
 end

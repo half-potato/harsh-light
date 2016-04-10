@@ -5,17 +5,14 @@ require 'level/Chunk'
 require 'util/Util'
 require 'util/Noise'
 require 'render/AssetPackage'
-require 'render/Level'
+require 'render/DrawableBlob'
 
 globaltime = 1
 tileSize = 84
 
 function love.load(arg)
    love.filesystem.load("loadAssets.lua")()
-   map = Level.new{seed=3948, x = 0, y = 0, quadmode = "flat"}
-   tmap = map:tileSpriteBatch({{1, 1}, {1, 2}, {2, 1}, {2, 2}}, gAssetPackage.tile["Tile.png"], 1, "isozig")
-   gmap = map:objectSpriteBatch({{1, 1}, {1, 2}, {2, 1}, {2, 2}}, gAssetPackage.green["Green.png"], 1, "isozig", "green")
-   smap = map:objectSpriteBatch({{1, 1}, {1, 2}, {2, 1}, {2, 2}},gAssetPackage.struct["Struct.png"], 1, "isozig", "struct")
+   map = DrawableBlob.new{seed=3948, x = 0, y = 0, quadmode = "flat"}
 end
 
 function love.update(dt)

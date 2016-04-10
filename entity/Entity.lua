@@ -20,6 +20,7 @@ function Entity.new(o)
 	o.position = o.position or {x=0, y=0}
 	o.desiredposition = o.desiredposition or {x=0, y=0}
 	o.velocity = o.velocity or {x=0, y=0}
+	o.number = 1
 
 	if not o.state then
 		o.state = "idle"
@@ -32,9 +33,9 @@ function Entity:updateAnimations(dt)
 	-- Deal with animations
 	self.tSpent = dt + self.tSpent
 	-- Check if the entity is done with the current frame
-	if self.tSpent > self.actions[self.state].frames[self.currentF].duration then
+	if self.tSpent > self.actions[self.state].frames[self.currentF] then
 		-- Add the remainder to the next timer for the next frame
-		self.tSpent = self.tSpent - self.actions[self.state].frames[self.currentF].duration 
+		self.tSpent = self.tSpent - self.actions[self.state].frames[self.currentF]
 		-- Check to see if the current action is done
 		if #self.actions[self.state].frames =< self.currentF then
 			-- check for next action
@@ -52,7 +53,10 @@ function Entity:updateAnimations(dt)
 			self.currentF = self.currentF+1
 		end
 	end
+end
 
+function Entity:getCurrentImg()
+	return self.actions[self.state].quads[self.currentF], self.actions[self.state].image
 end
 
 function Entity:updateVelocity(dt)
