@@ -1,25 +1,32 @@
 require 'level/Chunk'
-require 'util/Noise'
 
 Blob = {}
+--[[
 Blob.__index = Blob
 setmetatable(Blob, {
+	getType = function(self)
+		return self.typeName
+	end,
+	inherit = function (self, t, methods)
+		local mtnew = {__index = setmetatable(methods, {__index=self})}
+		return setmetatable(t or {}, mtnew)
+	end,
+
 	__call = function(cls, ...)
 		return cls.new(...)
 	end,
 })
+]]--
 
-function Blob.new(o)
+function Blob:new(o)
 	o = o or {}
-	setmetatable(o, Blob)
+	setmetatable(o, self)
+	self.__index = self
 	if not o.seed then
 		o.seed = love.math.noise(os.time(), os.time())
 	end
 	o.existingChunks = o.existingChunks or {}
-	if not o.chunks then
-		o.chunks = {}
-		o:genChunks(-5, -5, 5, 5)
-	end
+	o.chunks = o.chunks or {}
 	return o
 end
 
@@ -43,17 +50,29 @@ function Blob:genChunks(x, y, x2, y2)
 end
 
 function Blob:getChunkContaining(x, y)
-	return self.chunks[math.ceil(x / 16)][math.ceil(y / 16)]
+	if self.chunks[math.ceil(x/16)] then
+		return self.chunks[math.ceil(x / 16)][math.ceil(y / 16)]
+	end
+	return nil
 end
 
 function Blob:getData(x, y)
-	return self:getChunkContaining(x, y):getData(16 * (x % 16), 16 * (y % 16))
+	local chunk = self:getChunkContaining(x, y)
+	if chunk then
+		return chunk:getData(16 * (x % 16), 16 * (y % 16))
+	else
+		return nil
+	end
 end
 
 function Blob:isTileOpen(x, y)
 	local _, _, greenery, entity, structure = self:getData(x, y)
-	if greenery.doesOccupy or entity.doesOccupy or structure.doesOccupy then
-		return true
+	if greenery and entity and structure then
+		if greenery.doesOccupy or entity.doesOccupy or structure.doesOccupy then
+			return true
+		else
+			return false
+		end
 	else
 		return false
 	end

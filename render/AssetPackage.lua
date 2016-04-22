@@ -27,7 +27,7 @@ function AssetPackage:getFile(path)
 	end
 	for i=1, #splitPath do
 		if not curDir then
-			print("Could not find the file:" .. path)
+			print("Could not find the file: \"" .. path .. "\"")
 			return nil
 		end
 		curDir = curDir[splitPath[i]]
@@ -153,31 +153,25 @@ end
 
 -- Edits the table passed in
 function loadEntityTable(table, pathToEntityTilesheets, assetPackage)
-	for i, state in pairs(table) do
-		local img = assetPackage:getFile(pathToEntityTilesheets .. "/" .. state.imageName .. ".png")
-		local tinfo = assetPackage:getFile(pathToEntityTilesheets .. "/" .. state.imageName .. ".lua")
+	for n, entity in pairs(table) do 
+		local img = assetPackage:getFile(pathToEntityTilesheets .. "/" .. entity.name .. ".png")
+		local tinfo = assetPackage:getFile(pathToEntityTilesheets .. "/" .. entity.name .. ".lua")
+		-- Each state represents a row
 		if img and tinfo then
 			tinfo = tinfo()
 			local imgw = img:getWidth()
 			local imgh = img:getHeight()
-			for i=0, #state.frames-1 do
+			for stateName, stateInfo in pairs(entity.actions) do
 				local quads = {}
-				-- sheetW is in tiles
-				local yi = math.floor(i / tinfo.sheetW)
-				local xi = index % tinfo.sheetW
-				-- There is a starting seperator
-				local y = tinfo.theight * yi + (yi) * tinfo.seperatorW
-				local x = tinfo.twidth * xi + (xi) * tinfo.seperatorW
-				quads[#quads+1] = love.graphics.newQuad(x, y, tinfo.twidth, tinfo.theight, imgw, imgh)
-			end
-			state.quads = quads
-			state.image = img
-		else
-			if not tinfo then
-				print("Could not locate tinfo at path:" .. pathToTileInfo)
-			end
-			if not img then
-				print("Could not locate image at path:" .. pathToTilesheet)
+				local ty = tinfo.rows[stateName] - 1
+				for tx=0, #stateInfo.frames-1 do
+					-- There is a starting seperator
+					local y = tinfo.theight * ty + (ty * tinfo.seperatorW)
+					local x = tinfo.twidth * tx + (tx * tinfo.seperatorW)
+					quads[#quads+1] = love.graphics.newQuad(x, y, tinfo.twidth, tinfo.theight, imgw, imgh)
+				end
+				table[n].actions[stateName].quads = quads
+				table[n].actions[stateName].image = img
 			end
 		end
 	end

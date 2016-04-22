@@ -1,42 +1,20 @@
-require 'level/entity/Entity'
 -- Add actions to entities (to avoid cluttering
+local entitytable = ...
 
-ENTITY_INDEX[1].actions = {
+entitytable[1].actions = {
 	idle = {
 		imageName = "SandHowler",
 		frames = {
-			0.01
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
 		imageName = "SandHowlerFlash",
 		frames = {
-			0.01, 0.01
-		},
-		nextActions = {
-			{"idle", 0.5},
-			{"flashing", 0.5}
-		}
-	}
-}
-ENTITY_INDEX[2].actions = {
-	idle = {
-		image = "FrostGale",
-		frames = {
-			0.01
-		},
-		nextActions = {
-			{"idle", 0.5},
-			{"flashing", 0.5}
-		}
-	}
-	flashing = {
-		image = "FrostGaleFlash",
-		framesDurations = {
 			0.5, 0.5
 		},
 		nextActions = {
@@ -45,21 +23,21 @@ ENTITY_INDEX[2].actions = {
 		}
 	}
 }
---[[
-ENTITY_INDEX[3].actions = {
+entitytable[2].actions = {
 	idle = {
+		imageName = "FrostGale",
 		frames = {
-			{image = "Crab", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "FrostGaleFlash",
 		frames = {
-			{image = "CrabFlash", number = 0, duration = 0.01},
-			{image = "CrabFlash", number = 1, duration = 0.01},
+			0.5, 0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -67,20 +45,22 @@ ENTITY_INDEX[3].actions = {
 		}
 	}
 }
-ENTITY_INDEX[4].actions = {
+entitytable[3].actions = {
 	idle = {
+		imageName = "Crab",
 		frames = {
-			{image = "Spinefin", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "CrabFlash",
 		frames = {
-			{image = "SpinefinFlash", number = 0, duration = 0.01},
-			{image = "SpinefinFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -88,20 +68,22 @@ ENTITY_INDEX[4].actions = {
 		}
 	}
 }
-ENTITY_INDEX[5].actions = {
+entitytable[4].actions = {
 	idle = {
+		imageName = "Spinefin",
 		frames = {
-			{image = "Scorpion", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "SpinefinFlash",
 		frames = {
-			{image = "ScorpionFlash", number = 0, duration = 0.01},
-			{image = "ScorpionFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -109,20 +91,22 @@ ENTITY_INDEX[5].actions = {
 		}
 	}
 }
-ENTITY_INDEX[6].actions = {
+entitytable[5].actions = {
 	idle = {
+		imageName = "Scorpion",
 		frames = {
-			{image = "Sandwurm", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "ScorpionFlash",
 		frames = {
-			{image = "SandwurmFlash", number = 0, duration = 0.01},
-			{image = "SandwurmFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -130,20 +114,22 @@ ENTITY_INDEX[6].actions = {
 		}
 	}
 }
-ENTITY_INDEX[7].actions = {
+entitytable[6].actions = {
 	idle = {
+		imageName = "Sandwurm",
 		frames = {
-			{image = "Earthworm", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "SandwurmFlash",
 		frames = {
-			{image = "EarthwormFlash", number = 0, duration = 0.01},
-			{image = "EarthwormFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -151,20 +137,22 @@ ENTITY_INDEX[7].actions = {
 		}
 	}
 }
-ENTITY_INDEX[8].actions = {
+entitytable[7].actions = {
 	idle = {
+		imageName = "Earthworm",
 		frames = {
-			{image = "Bluejay", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "EarthwormFlash",
 		frames = {
-			{image = "BluejayFlash", number = 0, duration = 0.01},
-			{image = "BluejayFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -172,20 +160,22 @@ ENTITY_INDEX[8].actions = {
 		}
 	}
 }
-ENTITY_INDEX[9].actions = {
+entitytable[8].actions = {
 	idle = {
+		imageName = "Bluejay",
 		frames = {
-			{image = "Hawk", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "BluejayFlash",
 		frames = {
-			{image = "HawkFlash", number = 0, duration = 0.01},
-			{image = "HawkFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -193,20 +183,22 @@ ENTITY_INDEX[9].actions = {
 		}
 	}
 }
-ENTITY_INDEX[10].actions = {
+entitytable[9].actions = {
 	idle = {
+		imageName = "Hawk",
 		frames = {
-			{image = "Crow", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "HawkFlash",
 		frames = {
-			{image = "CrowFlash", number = 0, duration = 0.01},
-			{image = "CrowFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -214,20 +206,22 @@ ENTITY_INDEX[10].actions = {
 		}
 	}
 }
-ENTITY_INDEX[11].actions = {
+entitytable[10].actions = {
 	idle = {
+		imageName = "Crow",
 		frames = {
-			{image = "Roadhog", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "CrowFlash",
 		frames = {
-			{image = "RoadhogFlash", number = 0, duration = 0.01},
-			{image = "RoadhogFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -235,20 +229,22 @@ ENTITY_INDEX[11].actions = {
 		}
 	}
 }
-ENTITY_INDEX[12].actions = {
+entitytable[11].actions = {
 	idle = {
+		imageName = "Roadhog",
 		frames = {
-			{image = "SerBuffalo", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "RoadhogFlash",
 		frames = {
-			{image = "SerBuffaloFlash", number = 0, duration = 0.01},
-			{image = "SerBuffaloFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -256,20 +252,22 @@ ENTITY_INDEX[12].actions = {
 		}
 	}
 }
-ENTITY_INDEX[13].actions = {
+entitytable[12].actions = {
 	idle = {
+		imageName = "SerBuffalo",
 		frames = {
-			{image = "Squirrel", number = 1, duration = 0.01},
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
 			{"flashing", 0.5}
 		}
-	}
+	},
 	flashing = {
+		imageName = "SerBuffaloFlash",
 		frames = {
-			{image = "SquirrelFlash", number = 0, duration = 0.01},
-			{image = "SquirrelFlash", number = 1, duration = 0.01},
+			0.5,
+			0.5
 		},
 		nextActions = {
 			{"idle", 0.5},
@@ -277,4 +275,28 @@ ENTITY_INDEX[13].actions = {
 		}
 	}
 }
-]]
+entitytable[13].actions = {
+	idle = {
+		imageName = "Squirrel",
+		frames = {
+			0.5
+		},
+		nextActions = {
+			{"idle", 0.5},
+			{"flashing", 0.5}
+		}
+	},
+	flashing = {
+		imageName = "SquirrelFlash",
+		frames = {
+			0.5,
+			0.5
+		},
+		nextActions = {
+			{"idle", 0.5},
+			{"flashing", 0.5}
+		}
+	}
+}
+
+return entitytable

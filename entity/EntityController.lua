@@ -2,17 +2,20 @@ require 'util/Util'
 require 'entity/Entity'
 
 EntityController = {}
+--[[
 EntityController.__index = EntityController
 setmetatable(EntityController, {
 	__call = function (cls, ...)
 		return cls.new(...)
 	end
 })
+]]--
 
-function EntityController.new(o)
+function EntityController:new(o)
 	o = o or {}
 	setmetatable(o, EntityController)
-	o.entities = o.entities or {"friendlyplayers"={}, "hostileplayers"={} "friendlynpcs"={}, "hostilenpcs"={}}
+	self.__index = self
+	o.entities = o.entities or {friendlyplayers={}, hostileplayers={}, friendlynpcs={}, hostilenpcs={}}
 	-- If tilesize is false, the entity manager will assume that the entities are using tile coordinates
 	o.tileSize = o.tileSize
 	return o
@@ -21,9 +24,12 @@ end
 function EntityController:update(dt)
 	for role, line in pairs(self.entities) do
 		-- Role indiscriminant updates
-		for i, 1, #line do
-			line[i].update(dt)
-			line[i] = self:newEntityWithPos(line[i])
+		for i=1, #line do
+			self.entities[role][i]:update(dt)
+			local pos, vel = self:updateEntityPos(self.entities[role][i])
+			self.entities[role][i].x = pos.x
+			self.entities[role][i].y = pos.y
+			self.entities[role][i].velocity = vel
 			-- unload entities that go off the loaded area
 		end
 		-- Updates that take role into account
@@ -31,22 +37,21 @@ function EntityController:update(dt)
 end
 
 -- Returns new entity with new position based on desired position
-function EntityController:newEntityWithPos(entity)
-	local localcp = deepcopy(entity)
+function EntityController:updateEntityPos(entity)
 	--Only deal with collisions if the v != i
-	if localcp.velocity ~= "i" then
+	if entity.velocity ~= "i" then
 		--Ray trace from current pos to desired pos to check for coll
-		local diffx = localcp.desiredposition.x-localcp.position.x
-		local diffy = localcp.desiredposition.y-localcp.position.y
+		--[[local diffx = entity.desiredposition.x-entity.position.x
+		local diffy = entity.desiredposition.y-entity.position.y
 		local slopex = diffx / diffy
 		local slopey = diffy / diffx
 		local dist = math.sqrt(diffx^2 + diffy^2)
-		local lastCheckedPos = localcp.position
-		for i, 1, math.ceil(dist) do
-			local tx = diffx * i + localcp.position.x
-			local ty = diffy * i + localcp.position.y
+		local lastCheckedPos = entity.position
+		for i=1, math.ceil(dist) do
+			local tx = diffx * i + entity.position.x
+			local ty = diffy * i + entity.position.y
 			-- Convert to tile coords if necessary
-			if tileSize then
+			if self.tileSize then
 				local doesOccupy = self.map:isTileOpen(math.floor(tx/self.tileSize), math.floor(ty/self.tileSize)) 
 			else
 				local doesOccupy = self.map:isTileOpen(tx, ty)
@@ -54,31 +59,42 @@ function EntityController:newEntityWithPos(entity)
 			if doesOccupy then
 				lastCheckedPos = {x=tx, y=ty}
 			else
-				localcp.position = lastCheckedPos
-				localcp.velocity = velZero
-				return localcp
+				entity.position = lastCheckedPos
+				entity.velocity = velZero
+				return entity
 			end
-		end
-		localcp.position = localcp.desiredposition
-		return localcp
+		end]]
+		return entity.desiredposition, entity.velocity
 	else
 		-- For teleportation
-		localcp.velocity = velZero
-		localcp.position = localcp.desiredposition
-		return localcp
+		return entity.desiredposition, velZero 
 	end
 end
 
-function EntityController:addEntity(entity, role)
+function EntityController:addEntity(entity, role, x, y)
+	local tx, ty = (x*CHUNK_SIZE) + entity.cx, (y*CHUNK_SIZE) + entity.cy
+	if self.tileSize then
+		entity.x = tx * self.tileSize
+		entity.y = ty * self.tileSize
+	else
+		entity.x = tx
+		entity.y = ty
+	end
 	table.insert(self.entities[role], entity)
 end
 
-function EntityController:addEntities(entities, roles)
-	for i, 1, #entities do
-		self:addEntity(entities[i], roles[i])
+function EntityController:unloadArea(x, y, width, height)
+	local remEntities = {}
+	for i, _ in pairs(self.entities) do
+		for n, _ in pairs(self.entities[i]) do
+			local e = self.entities[i][n]
+			if (e.x >= x and e.y >= y) and (e.x < (x+width) and e.y < (y+width)) then
+				local en = table.remove(self.entities[i], n)
+				en.cx = math.floor(en.x/(self.tileSize or 1))
+				en.cy = math.floor(en.y/(self.tileSize or 1))
+				table.insert(remEntities, en)
+			end
+		end
 	end
-end
-
-function EntityController:unloadEntity(entity, role, map)
-
+	return remEntities
 end

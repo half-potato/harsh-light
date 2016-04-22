@@ -12,7 +12,7 @@ setmetatable(DrawableBlob, {
 -- quadmode = "iso" or "flat"
 function DrawableBlob.new(o)
 	o = o or {}
-	if not self.chunks then
+	if not o.chunks then
 		o = Blob.new(o)
 	end
 	setmetatable(o, DrawableBlob)
@@ -20,15 +20,6 @@ function DrawableBlob.new(o)
 	o.theight = o.theight or 32
 	o.meshBase = meshPoints(0, 0, o.twidth, o.theight, o.quadmode)
 	return o
-end
-
-function DrawableBlob:genMesh(x, y, scale)
-	points = self.meshBase
-	for i=1, #points do
-		points[i][1] = points[i][1] * scale + x
-		points[i][2] = points[i][2] * scale + y
-	end
-	return love.graphics.newMesh(points, "fan", "static")
 end
 
 function DrawableBlob:drawEntity(entity, x, y, scale)

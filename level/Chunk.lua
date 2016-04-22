@@ -1,71 +1,37 @@
-require 'util/Noise'
 require 'util/Util'
 require 'level/biome/Biome'
 require 'level/tile/Tile'
 require 'level/green/Green'
 require 'level/struct/Struct'
-require 'level/entity/Entity'
+require 'entity/EntityTable'
+
+CHUNK_SIZE = 16
 
 Chunk = {}
+--[[
 Chunk.__index = Chunk
 setmetatable(Chunk, {
 	__call = function(cls, ...)
 		return cls.new(...)
 	end,
-})
+})]]
 
 -- either has tiles or seed + x and y
-function Chunk.new(o)
+function Chunk:new(o)
 	o = o or {}
 	setmetatable(o, Chunk)
+	self.__index = self
 	if (not o.tiles) then
 		if not o.seed then
 			o.tiles = {}
-			for x = 1, 16 do
+			for x = 1, CHUNK_SIZE do
 				o.tiles[x] = {}
-				for y = 1, 16 do
+				for y = 1, CHUNK_SIZE do
 					o.tiles[x][y] = 0
 				end
 			end
 		else
-			local s = o.seed / math.pow(10, math.floor(math.log(o.seed, 10)))
-			o.biomes = {}
-			o.tiles = {}
-			o.entities = {}
-			o.green = {}
-			o.struct = {}
-			for x = 1, 16 do
-				o.tiles[x] = {}
-				o.biomes[x] = {}
-				for y = 1, 16 do
-					local t = 0.5
-					local nbiome = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.30, s*10), 2) * 2
-					nbiome = math.min(1, nbiome)
-					local ntile = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.15, s*10), 2) * 2
-					ntile = math.min(1, ntile)
-					local nentity = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.25, s*10), 2) * 2
-					nentity = math.min(1, nentity)
-					local nstruct = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.75, s*10), 2) * 2
-					nstruct = math.min(1, nstruct)
-					local ngreen = math.pow(love.math.noise(t*(o.x * 16 + x), t*(o.y * 16 + y), 0.5, s*10), 2) * 2
-					ngreen = math.min(1, ngreen)
-					local biome, tile, green, entity, struct = o:gen(nbiome, ntile, ngreen, nentity, nstruct)
-					o.biomes[x][y] = biome
-					o.tiles[x][y] = tile
-					if entity then
-						o.entities[#o.entities + 1] = deepcopy(ENTITY_INDEX[entity])
-						o.entities[#o.entities].pos = {x = x, y = y}
-					end
-					if green then
-						o.green[#o.green + 1] = deepcopy(GREEN_INDEX[green])
-						o.green[#o.green].pos = {x = x, y = y}
-					end
-					if struct then
-						o.struct[#o.struct + 1] = deepcopy(STRUCT_INDEX[struct])
-						o.struct[#o.struct].pos = {x = x, y = y}
-					end
-				end
-			end
+			o:generate()
 		end
 	end
 	return o
@@ -73,27 +39,32 @@ end
 
 -- returns turple the values biome, tile type, greenery, entity, structure
 function Chunk:getData(x, y)
-	b = self.biomes[x][y]
-	t = self.tiles[x][y]
-	g = 0
-	for i=1, #self.green do
-		if (self.green[i].pos.x == x) and (self.green[i].pos.y == y) then
-			g = self.green[i]
+	if self.biomes[x] then
+		if self.biomes[x][y] then
+			b = self.biomes[x][y]
+			t = self.tiles[x][y]
+			g = 0
+			for i=1, #self.green do
+				if (self.green[i].pos.x == x) and (self.green[i].pos.y == y) then
+					g = self.green[i]
+				end
+			end
+			e = 0
+			for i=1, #self.entities do
+				if (self.entities[i].pos.cx == x) and (self.entities[i].pos.cy == y) then
+					e = self.entities[i]
+				end
+			end
+			s = 0
+			for i=1, #self.struct do
+				if (self.struct[i].pos.x == x) and (self.struct[i].pos.y == y) then
+					g = self.struct[i]
+				end
+			end
+			return b, t, g, e, s
 		end
 	end
-	e = 0
-	for i=1, #self.entities do
-		if (self.entities[i].pos.x == x) and (self.entities[i].pos.y == y) then
-			e = self.entities[i]
-		end
-	end
-	s = 0
-	for i=1, #self.struct do
-		if (self.struct[i].pos.x == x) and (self.struct[i].pos.y == y) then
-			g = self.struct[i]
-		end
-	end
-	return b, t, g, e, s
+	return nil
 end
 
 function Chunk:genBiome(v)
@@ -168,11 +139,55 @@ function Chunk:genStructure(v, biome, tile, green)
 	return nil
 end
 
-function Chunk:gen(biome, tile, green, entity, struct)
+function Chunk:genSingle(biome, tile, green, entity, struct)
 	b = self:genBiome(biome)
 	t = self:genTile(tile, b)
 	g = self:genGreenery(green, b, t)
 	s = self:genStructure(struct, b, t, g)
 	e = self:genEntity(entity, b, t, s)
 	return b, t, g, e, s
+end
+
+function Chunk.noiseFn(x, y, n, s)
+	return math.min(1, math.pow(love.math.noise(0.5*x, 0.5*y, n, s*10), 2) * 2)
+end
+
+function Chunk:generate()
+	local s = self.seed / math.pow(10, math.floor(math.log(self.seed, 10)))
+	self.biomes = {}
+	self.tiles = {}
+	self.entities = {}
+	self.green = {}
+	self.struct = {}
+	for x = 1, CHUNK_SIZE do
+		self.tiles[x] = {}
+		self.biomes[x] = {}
+		for y = 1, CHUNK_SIZE do
+			local ax = (self.x * CHUNK_SIZE + x)
+			local ay = (self.y * CHUNK_SIZE + y)
+			local nbiome = Chunk.noiseFn(ax, ay, 0.01, s)
+			local ntile = Chunk.noiseFn(ax, ay, 0.15, s)
+			local nentity = Chunk.noiseFn(ax, ay, 0.25, s)
+			local nstruct = Chunk.noiseFn(ax, ay, 0.75, s)
+			local ngreen = Chunk.noiseFn(ax, ay, 0.50, s)
+			local biome, tile, green, entity, struct = self:genSingle(nbiome, ntile, ngreen, nentity, nstruct)
+			self.biomes[x][y] = biome
+			self.tiles[x][y] = tile
+			if entity then
+				self.entities[#self.entities + 1] = deepcopy(ENTITY_INDEX[entity])
+				self.entities[#self.entities].cx = x
+				self.entities[#self.entities].cy = y
+			end
+			if green then
+				self.green[#self.green + 1] = deepcopy(GREEN_INDEX[green])
+				self.green[#self.green].cx = x
+				self.green[#self.green].cy = y
+			end
+			if struct then
+				self.struct[#self.struct + 1] = deepcopy(STRUCT_INDEX[struct])
+				self.struct[#self.struct].cx = x
+				self.struct[#self.struct].cy = y
+			end
+		end
+	end
 end
